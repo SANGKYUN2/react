@@ -9,3 +9,11 @@
 .title {
   width: 100px;
 }
+
+.ReadPage .title {
+  width: 100px;
+}
+
+.PassModal .title {
+  width: 100px;
+}

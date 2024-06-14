@@ -6,7 +6,7 @@ import { useNavigate } from 'react-router-dom';
 const LoginPage = () => {
     const navi = useNavigate();
     const [form, setForm] = useState({
-        uid : 'green',
+        uid : 'sky',
         upass : 'pass'
     });
 

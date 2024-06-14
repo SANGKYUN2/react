@@ -4,6 +4,7 @@ import { Row, Col, Form, Button } from 'react-bootstrap'
 import '../Paging.css';
 import Pagination from 'react-js-pagination'
 import { useLocation } from 'react-router-dom';
+import Stars from '../common/Stars';
 
 const ReplyPage = ({ bid }) => {
     const uid = sessionStorage.getItem('uid');
@@ -13,12 +14,13 @@ const ReplyPage = ({ bid }) => {
     const [count, setCount] = useState(0);
     const [page, setPage] = useState(1);
     const [size, setSize] = useState(3);
+    const [rating, setRating] = useState(0);
 
     const callAPI = async () => {
         const url = `/reply/list.json/${bid}?page=${page}&size=${size}`;
         const res = await axios.get(url);
         console.log(res.data);
-        const data = res.data.documents.map(doc => doc && { ...doc, isEllip: true, isEdit: false, text:doc.contents });
+        const data = res.data.documents.map(doc => doc && { ...doc, isEllip: true, isEdit: false, text:doc.contents, num:doc.rating });
         setList(data);
         setCount(res.data.total);
     }
@@ -37,8 +39,9 @@ const ReplyPage = ({ bid }) => {
             alert('댓글 내용을 입력하세요!');
             return;
         }
-        await axios.post('/reply/insert', { bid, contents, uid: sessionStorage.getItem('uid') });
+        await axios.post('/reply/insert', { bid, contents, uid: sessionStorage.getItem('uid'), rating});
         setContents('');
+        setRating(0);
         callAPI();
     }
 
@@ -64,9 +67,9 @@ const ReplyPage = ({ bid }) => {
     }
 
     const onClickSave = async(reply) => {
-        if(reply.contents!==reply.text) {
+        if(reply.contents!==reply.text || reply.num !== reply.rating) {
             if(!window.confirm(`${reply.rid}번 댓글을 수정하실래요?`)) return;
-            await axios.post('/reply/update', {rid:reply.rid, contents:reply.contents});
+            await axios.post('/reply/update', {rid:reply.rid, contents:reply.contents, rating:reply.rating});
         }
         callAPI();
     }
@@ -78,12 +81,25 @@ const ReplyPage = ({ bid }) => {
         callAPI();
     }
 
+    const getRating = (rating) => {
+        setRating(rating);
+    }
+
+    const getReplyRating = (rating, rid) => {
+        console.log(rating, '.......................', rid);
+        const data = list.map(reply=>reply.rid===rid ? {...reply, rating : rating} : reply);
+        setList(data);
+    }
+
     return (
         <div className='my-5'>
             <Row className='justify-content-center'>
                 <Col xs={12} md={10} lg={8}>
                     {sessionStorage.getItem('uid') ?
                         <div className='mb-5'>
+                            <div>
+                                <Stars size={'30px'} number={rating} getRating={getRating}/>
+                            </div>
                             <Form.Control value={contents} onChange={(e) => setContents(e.target.value)}
                                 as="textarea" rows={5} />
                             <div className='text-end mt-2'>
@@ -103,10 +119,13 @@ const ReplyPage = ({ bid }) => {
                     {list.map(reply =>
                         <div key={reply.rid}>
                             <Row>
-                                <Col className='text-muted' style={{ fontSize: '14px' }}>
-                                    <span className='me-3'>{reply.uname} ({reply.uid})</span>
+                                <Col className='text-muted' style={{ fontSize: '12px' }} xs={9}>
+                                    <span className='me-3'>{reply.rid} {reply.uname} ({reply.uid})</span>
+                                    <Stars getRating={(e)=>getReplyRating(e, reply.rid)} 
+                                        size={'15px'} number={reply.rating} disabled={(reply.uid!==uid || !reply.isEdit) && true}/>
+                                    <br/>
                                     <span>{reply.fmtdate}</span>
-                                    {reply.fmtdate && <span>({reply.fmtupdate})</span>}
+                                    {reply.fmtupdate && <span style={{color:'blue'}}> ({reply.fmtupdate})</span>}
                                 </Col>
                                 {uid === reply.uid && !reply.isEdit &&
                                     <Col className='text-end mb-2'>
