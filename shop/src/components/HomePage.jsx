@@ -4,6 +4,7 @@ import { Row, Col, Card, Form, InputGroup, Button } from 'react-bootstrap'
 import Pagination from 'react-js-pagination';
 import './Paging.css'
 import { AiFillHeart, AiOutlineHeart } from "react-icons/ai";
+import { TfiCommentAlt } from "react-icons/tfi";
 
 const HomePage = () => {
     const uid = sessionStorage.getItem('uid');
@@ -83,7 +84,11 @@ const HomePage = () => {
                                         </div>
                                         <div>{book.fmtprice}원</div>
                                     </Col>
-                                    <Col xs={1} className='text-end me-2'>
+                                    <Col className='text-end'>
+                                        <>
+                                            <TfiCommentAlt style={{fontSize : '20px'}}/>
+                                            <span style={{fontSize : '12px'}} className='me-2'>{book.rcnt}</span>
+                                        </>
                                         {book.ucnt === 0 ?
                                             <AiOutlineHeart className='heart'
                                                 onClick={()=>onClickLike(book.bid)} />
@@ -91,7 +96,7 @@ const HomePage = () => {
                                             <AiFillHeart className='heart' 
                                                 onClick={()=>onClickCancel(book.bid)}/>
                                         }
-                                        <span>{book.lcnt}</span>
+                                        <span style={{fontSize:'10px'}} className='user-text'>{book.lcnt}</span>
                                     </Col>
 
                                 </Row>

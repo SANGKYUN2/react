@@ -1,12 +1,14 @@
 import axios from 'axios';
-import React, { useState } from 'react'
+import React, { useContext, useState } from 'react'
 import { InputGroup, Form, Button, Card, Col, Row } from 'react-bootstrap'
 import { useNavigate } from 'react-router-dom';
+import { CountContext } from '../CountContext';
 
 const LoginPage = () => {
+    const {callAPICount} = useContext(CountContext);
     const navi = useNavigate();
     const [form, setForm] = useState({
-        uid : 'green',
+        uid : 'admin',
         upass : 'pass'
     });
 
@@ -34,6 +36,7 @@ const LoginPage = () => {
         }
         else if (result===1) {
             sessionStorage.setItem('uid', uid);
+            callAPICount();
             if(sessionStorage.getItem('target')) {
                 navi(sessionStorage.getItem('target'));
             }

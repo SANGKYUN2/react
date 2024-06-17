@@ -5,6 +5,7 @@ import { useLocation, useNavigate } from 'react-router-dom';
 import '../Paging.css'
 import Pagination from 'react-js-pagination';
 
+
 const ReviewPage = ({ bid }) => {
     const [page, setPage] = useState(1);
     const [size, setSize] = useState(3);
@@ -19,11 +20,17 @@ const ReviewPage = ({ bid }) => {
     const callAPI = async () => {
         const res = await axios.get(`/review/list/${bid}?page=${page}&size=${size}`);
         console.log(res.data);
-        setCount(res.data.count);
-        //현재 페이지가 마지막 페이지보다 크면 페이지를 1 감소시킨다.
-        if (page > Math.ceil(res.data.count / size)) setPage(page - 1);
-        const data = res.data.documents.map(doc => doc && { ...doc, ellip: true, isEdit: false, text:doc.contents })
-        setReviews(data);
+        //리뷰가 하나도 없는 경우
+        if(!res.data.documents) {
+            setReviews([]);
+        }
+        else {
+            setCount(res.data.count);
+            //현재 페이지가 마지막 페이지보다 크면 페이지를 1 감소시킨다.
+            if (page > Math.ceil(res.data.count / size)) setPage(page - 1);
+            const data = res.data.documents.map(doc => doc && { ...doc, ellip: true, isEdit: false, text:doc.contents })
+            setReviews(data);
+        }
     }
 
     const onClickContents = (rid) => {
@@ -69,9 +76,13 @@ const ReviewPage = ({ bid }) => {
         setReviews(data);
     }
 
-    const onClickCancel = (rid) =>  {
-        const data = reviews.map(doc => doc.rid === rid ? { ...doc, isEdit: false, contents:doc.text } : doc);
-        setReviews(data);
+    const onClickCancel = (rid, contents, text) =>  {
+        if (contents !== text) {
+            if (!window.confirm("정말로 취소하실래요?")) return;
+        }
+            const data = reviews.map(doc => doc.rid === rid ? { ...doc, isEdit: false, contents:doc.text, ellip:true } : doc);
+            setReviews(data);
+    
     }
 
     const onChangeForm = (e, rid) => {
@@ -79,11 +90,17 @@ const ReviewPage = ({ bid }) => {
         setReviews(data);
     }
 
-    const onClickSave = async(rid, contents) => {
+    const onClickSave = async(rid, contents, text) => {
         if(contents==="") {
             alert("리뷰 내용을 입력하세요!");
             return;
         }
+        if(contents === text) {
+            const data = reviews.map(doc => doc.rid === rid?{ ...doc, isEdit: false, ellip:true} : doc);
+            setReviews(data);
+            return;
+        }
+
         if(!window.confirm(`${rid}번 리뷰를 수정하실래요?`)) return;
         //리뷰 수정     
         const res = await axios.post('/review/update', {rid, contents});
@@ -129,9 +146,9 @@ const ReviewPage = ({ bid }) => {
                             }
                             {(uid === r.uid && r.isEdit) &&
                                 <Col className='text-end'>
-                                    <Button onClick={()=> onClickSave(r.rid, r.contents)}
+                                    <Button onClick={()=> onClickSave(r.rid, r.contents, r.text)}
                                         variant='outline-success' size='sm' className='me-2 mb-2'>저장</Button>
-                                    <Button onClick={()=> onClickCancel(r.rid)}
+                                    <Button onClick={()=> onClickCancel(r.rid, r.contents, r.text)}
                                         variant='outline-warning' size='sm' className='mb-2'>취소</Button>
                                 </Col>
                             }

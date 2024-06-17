@@ -7,6 +7,8 @@ import SearchPage from './books/SearchPage'
 import ListPage from './books/ListPage'
 import UpdatePage from './books/UpdatePage'
 import BookReadPage from './books/ReadPage'
+import CartPage from './orders/CartPage'
+import OrderList from './orders/OrderList'
 
 const RouterPage = () => {
   return (
@@ -18,6 +20,8 @@ const RouterPage = () => {
         <Route path='/books/list' element={<ListPage/>}/>
         <Route path='/books/update/:bid' element={<UpdatePage/>}/>
         <Route path='/books/read/:bid' element={<BookReadPage/>}/>
+        <Route path='/orders/cart' element={<CartPage/>}/>
+        <Route path='/orders/list' element={<OrderList/>}/>
     </Routes>
   )
 }
