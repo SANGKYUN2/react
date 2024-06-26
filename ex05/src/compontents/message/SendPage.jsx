@@ -1,6 +1,6 @@
 import axios from 'axios'
 import React, { useEffect, useState } from 'react'
-import { Table } from 'react-bootstrap';
+import { Table, Button } from 'react-bootstrap';
 import { Link } from 'react-router-dom';
 
 const SendPage = () => {
@@ -36,11 +36,24 @@ const SendPage = () => {
         setChecked(cnt);
     }, [list]);
 
+    const onClickDelete = () => {
+        let cnt = 0;
+        list.forEach(async msg => {
+            if(msg.checked) {
+                await axios.post(`/message/send/delete/${msg.mid}`);
+                cnt++;
+            }
+            if(cnt===checked) callAPI();
+        })
+    }
 
 
     return (
         <div>
             <h1 className='text-center'>보낸 메시지</h1>
+            <div className='mb-2'>
+                <Button onClick={onClickDelete} variant="danger">선택 삭제</Button>
+            </div>
             <Table variant='warning' striped bordered hover className='align-middle text-center'>
                 <colgroup>
                     <col style={{ width: '5%' }} />
@@ -51,7 +64,7 @@ const SendPage = () => {
                 </colgroup>
                 <thead>
                     <tr>
-                        <td><input checked={checked===list.length}
+                        <td><input checked={list.length > 0 && checked===list.length}
                             type="checkbox" onChange={onChangeAll}/></td>
                         <td>받은이</td>
                         <td>내용</td>
@@ -64,7 +77,7 @@ const SendPage = () => {
                         <tr key={msg.mid}>
                             <td><input onChange={(e)=>onChangeSingle(e, msg.mid)}
                                 type="checkbox" checked={msg.checked}/></td>
-                            <td>{msg.uname} ({msg.receiver})</td>
+                            <td>{msg.mid} {msg.uname} ({msg.receiver})</td>
                             <td>
                                 <div className='ellipsis'>
                                     <Link to={`/message/send/${msg.mid}`}>{msg.message}</Link></div>
