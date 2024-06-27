@@ -2,12 +2,26 @@ import Tab from 'react-bootstrap/Tab';
 import Tabs from 'react-bootstrap/Tabs';
 import { CKEditor } from '@ckeditor/ckeditor5-react';
 import ClassicEditor from '@ckeditor/ckeditor5-build-classic';
-import { Button, Col, InputGroup, Row, Form } from 'react-bootstrap'
+import { Button, Col, InputGroup, Row, Form, Badge } from 'react-bootstrap'
 import axios from 'axios';
-import { useState } from 'react';
+import { useEffect, useState } from 'react';
 
 const Detail = ({form, setForm, gid, callAPI, good}) => {
+    const style = {
+        border : '1px solid gray',
+        width : '100%'
+    }
     const [files, setFiles] = useState([]);
+    const [attaches, setAttaches] = useState([]);
+    const callAttach = async() => {
+        const res = await axios.get(`/goods/attach/${form.gid}`);
+        //console.log(res.data);
+        setAttaches(res.data);
+    }
+
+    useEffect(()=> {
+        callAttach();
+    },[])
     
     const onClickSave = async() => {
         if(good.contents === form.contents) return;
@@ -30,6 +44,27 @@ const Detail = ({form, setForm, gid, callAPI, good}) => {
         setFiles(selFiles);
     }
 
+    const onClickAttach = async() => {
+        if(files.length === 0) return;
+        if(!window.confirm(`${files.length}개 파일을 업로드 하실래요?`)) return;
+        //첨부 파일 업로드
+        const formData = new FormData();
+        for(let i=0; i<files.length; i++) {
+            formData.append('bytes', files[i].byte);
+        }
+        await axios.post(`/goods/attach/${form.gid}`, formData);
+        alert("첨부파일 업로드!");
+        callAttach();
+        setFiles([]);
+    }
+
+    const onClickDelete = async(att) => {
+        if(!window.confirm(`${att.aid}번 이미지를 삭제하실래요?`)) return;
+        //첨부파일삭제
+        await axios.post('/goods/attach/delete', att);
+        alert("첨부파일삭제!");
+        callAttach();
+    }
     return (
         <Tabs
           defaultActiveKey="home"
@@ -45,16 +80,29 @@ const Detail = ({form, setForm, gid, callAPI, good}) => {
                     onChange={(e, editor)=> setForm({...form, contents:editor.getData()})}/>
                     
           </Tab>
-            <Tab eventKey="profile" title="첨부파일">
+            <Tab eventKey="profile" title="파일첨부하기">
                 <InputGroup>
                     <Form.Control onChange={onChangeFiles} 
                         type='file' multiple={true}/>
-                    <Button>첨부 파일 저장</Button>
+                    <Button onClick={onClickAttach}>첨부 파일 저장</Button>
                 </InputGroup>
                 <Row className='my-3'>
                     {files.map(file=>
-                        <Col key={file.name} md={3}>
+                        <Col key={file.name} mx={3}>
                             <img src={file.name} width="100%" />
+                        </Col>
+                    )}
+                </Row>
+            </Tab>
+            <Tab eventKey="attach" title="첨부한파일">
+                <Row>
+                    {attaches.map(att=>
+                        <Col key={att.aid} xs={2} className='mb-3'>
+                            <div style={{position:'relative'}}>
+                                <Badge onClick={()=>onClickDelete(att)}
+                                    bg='danger' style={{position:'absolute', top:'10px', right:'10px',  cursor:'pointer'}}>X</Badge>
+                                <img src={att.filename} width="100%" style={style}/>   
+                            </div>
                         </Col>
                     )}
                 </Row>
