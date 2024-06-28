@@ -21,9 +21,8 @@ const LoginPage = () => {
         const res = await axios.post('/users/login', form);
         if(res.data ===1) {
             alert('로그인 성공!');
-            setUser({uid, uname : '무기명'});
             sessionStorage.setItem('uid', uid);
-            navi('/');
+            window.location.href='/';
         }
         else if (res.data===2){
             alert('비밀번호가 맞지 않습니다!');

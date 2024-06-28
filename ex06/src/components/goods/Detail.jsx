@@ -2,25 +2,36 @@ import Tab from 'react-bootstrap/Tab';
 import Tabs from 'react-bootstrap/Tabs';
 import { CKEditor } from '@ckeditor/ckeditor5-react';
 import ClassicEditor from '@ckeditor/ckeditor5-build-classic';
-import { Button, Col, InputGroup, Row, Form, Badge } from 'react-bootstrap'
+import { Button, Col, InputGroup, Row, Form, Badge, Table } from 'react-bootstrap'
 import axios from 'axios';
 import { useEffect, useState } from 'react';
+import ModalRelated from './ModalRelated';
 
-const Detail = ({form, setForm, gid, callAPI, good}) => {
+const Detail = ({form, setForm, gid, callAPI, good, fmtprice}) => {
     const style = {
         border : '1px solid gray',
         width : '100%'
     }
     const [files, setFiles] = useState([]);
     const [attaches, setAttaches] = useState([]);
+    const [related, setRelated] = useState([]);
+
     const callAttach = async() => {
         const res = await axios.get(`/goods/attach/${form.gid}`);
         //console.log(res.data);
         setAttaches(res.data);
     }
 
+    const callRelated = async() => {
+        const res1 = await axios.get(`/goods/related/list/${form.gid}`);
+        const data = res1.data.map(goods=>goods && {...goods, gid:goods.rid});
+        //console.log(res1.data);
+        setRelated(data);
+    }
+
     useEffect(()=> {
         callAttach();
+        callRelated();
     },[])
     
     const onClickSave = async() => {
@@ -65,6 +76,15 @@ const Detail = ({form, setForm, gid, callAPI, good}) => {
         alert("첨부파일삭제!");
         callAttach();
     }
+
+    const onClickRelatedDelete = async(rid) => {
+        if(!window.confirm(`${form.gid}-${rid} 삭제하실래요?`)) return;
+        //관련상품삭제
+        await axios.post('/goods/related/delete', {gid : form.gid, rid});
+        alert("삭제완료!");
+        callRelated();
+    }
+
     return (
         <Tabs
           defaultActiveKey="home"
@@ -106,6 +126,30 @@ const Detail = ({form, setForm, gid, callAPI, good}) => {
                         </Col>
                     )}
                 </Row>
+            </Tab>
+            <Tab eventKey="related" title="관련상품">
+                <ModalRelated gid={form.gid} callRelated={callRelated}/>
+                <Table className='mt-3'>
+                    <thead className='table-dark'>
+                        <tr>
+                            <td className='text-center'>상품 코드</td>
+                            <td>상품 이름</td>
+                            <td className='text-center'>상품 가격</td>
+                            <td className='text-center'>삭제</td>
+                        </tr>
+                    </thead>
+                    <tbody>
+                        {related.map(goods=>
+                            <tr key={goods.rid}>
+                                <td className='text-center'>{goods.rid}</td>
+                                <td>{goods.title}</td>
+                                <td className='text-center'>{goods.fmtprice}원</td>
+                                <td className='text-center'><Button onClick={()=>onClickRelatedDelete(goods.rid)}
+                                    size='sm' variant='danger'>삭제</Button></td>
+                            </tr>
+                        )}
+                    </tbody>
+                </Table>
             </Tab>
         </Tabs>
     );

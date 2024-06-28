@@ -4,7 +4,7 @@ import RouterPage from '../routers/RouterPage'
 import HeaderPage from './HeaderPage'
 import { BoxContext } from './BoxContext'
 
-const MenuPage = () => {
+const CustomerMenu = () => {
     const {user, setUser} = useContext(BoxContext);
     const onClickLogout = (e) => {
         e.preventDefault();
@@ -21,8 +21,8 @@ const MenuPage = () => {
                 <Link to='/' className='me-3'>Home</Link>
                     {sessionStorage.getItem('uid') ?
                         <>
-                            <Link to='/goods/search' className='me-3'>상품검색</Link>
-                            <Link to='/goods/list' className='me-3'>상품목록</Link>
+                            <Link to='/goods/cart' className='me-3'>장바구니</Link>
+                            <Link to='/orders/list' className='me-3'>주문목록</Link>
                             <Link onClick={onClickLogout}
                                 to='#' className='me-3' style={{float:'right'}}>로그아웃</Link>
                             <Link to='/users/mypage' className='me-3' style={{float:'right'}}>{sessionStorage.getItem('uid')}님 환영합니다.</Link>
@@ -38,4 +38,4 @@ const MenuPage = () => {
     )
 }
 
-export default MenuPage
+export default CustomerMenu

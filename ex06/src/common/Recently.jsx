@@ -3,6 +3,7 @@ import React, { useEffect, useState } from 'react'
 import Slider from "react-slick";
 import { BiChevronLeft, BiChevronRight } from 'react-icons/bi';
 import { Card, Row, Col } from 'react-bootstrap';
+import { Link } from 'react-router-dom';
 
 function SampleNextArrow(props) {
     const { className, style, onClick } = props;
@@ -28,8 +29,7 @@ function SampleNextArrow(props) {
     );
   }
 
-const Recently = () => {
-    const [goods, setGoods] = useState([]);
+const Recently = ({goods}) => {
     var settings = {
         dots: true,
         infinite: true,
@@ -42,25 +42,17 @@ const Recently = () => {
         prevArrow: <SamplePrevArrow />
     };
 
-    const callAPI = async() => {
-        const res = await axios.get(`/goods/list?page=1&size=10`);
-        //console.log(res.data.list);
-        setGoods(res.data.list);
-    }
-
-    useEffect(()=> {
-        callAPI();
-    }, [])
-
     return (
         <Row>
             <Slider {...settings} className='py-5'>
-                {goods.map(good=>
+                {goods.map((good, index)=>
                    <Col key={good.gid}>
                         <Card className='me-2'>
                             <Card.Body>
-                                <img src={good.image} width='90%'/>
-                                <div className='ellipsis mt-3'>{good.title}</div>
+                                <Link to={`/goods/read/${good.gid}`}>
+                                    <img src={good.image} width='100%'/>
+                                </Link>
+                                <div className='ellipsis mt-3'>[{index+1}] {good.title}</div>
                                 <div>{good.fmtprice}원</div>
                             </Card.Body>
                         </Card>
