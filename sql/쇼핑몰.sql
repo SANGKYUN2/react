@@ -425,12 +425,12 @@ create table trade(
 
 desc trade;
 /*통장개설*/
-insert into account(ano, uid)
-values('A001', 'sky');
-insert into account(ano, uid)
-values('B001', 'blue');
-insert into account(ano, uid)
-values('C001', 'black');
+insert into account(ano, uid, balance)
+values('A001', 'sky', 100000);
+insert into account(ano, uid, balance)
+values('B001', 'blue', 300000);
+insert into account(ano, uid, balance)
+values('C001', 'black', 180000);
 
 /* 내통장에 입금 */
 insert into trade(ano, amount)
@@ -453,11 +453,29 @@ update account set balance=balance + 700 where ano='B001';
 
 select * from account;
 select * from trade;
+delete from trade where tid>0;
 
 select *,format(balance, 0) fmtbalance from account;
 
-select *,format(amount, 0) fmtAmount, uid
-from trade join account
+select trade.*,format(amount, 0) fmtAmount, uid
+from trade left join account
 on trade.tno=account.ano
 where trade.ano='A001';
 
+create table replyLike (
+	reply_key int,
+	reply_writer varchar(20),
+	reply_reaction varchar(20) default 'none',
+    primary key(reply_key, reply_writer),
+	foreign key (reply_writer) references user (user_uid) on delete cascade,
+	foreign key (reply_key) references reply (reply_key) on delete cascade
+);
+
+create table rereplyLike (
+	rereply_key int,
+    rereply_writer varchar(20),
+	rereply_reaction varchar(20) default 'none',
+    primary key (rereply_key, rereply_writer),
+	foreign key (rereply_writer) references user (user_uid) on delete cascade,
+	foreign key (rereply_key) references rereply (rereply_key) on delete cascade
+);
